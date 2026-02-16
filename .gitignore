@@ -46,3 +46,18 @@ Thumbs.db
 
 # Models (optional - remove if you want to commit your model)
 backend/models/*.pt
+backend/static/simulations/sim_20260216_161913_cef6352b_base.png
+backend/static/simulations/sim_20260216_161913_cef6352b_osm.png
+backend/static/simulations/sim_20260216_161913_cef6352b_sat.png
+backend/static/simulations/sim_20260216_161913_cef6352b.nc
+backend/static/simulations/sim_20260216_162952_d24e9866.nc
+backend/static/simulations/sim_20260216_163241_ddb535ae_base.png
+backend/static/simulations/sim_20260216_163241_ddb535ae_osm.png
+backend/static/simulations/sim_20260216_163241_ddb535ae_sat.png
+backend/static/simulations/sim_20260216_163241_ddb535ae.nc
+backend/static/simulations/sim_20260216_170850_7eda9c8c_osm.png
+backend/static/simulations/sim_20260216_170850_7eda9c8c.nc
+backend/tests/check_integration.py
+backend/tests/test_api.py
+backend/tests/test_bearing.py
+backend/tests/test_stats.py
