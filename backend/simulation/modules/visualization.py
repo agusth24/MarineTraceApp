@@ -1,6 +1,8 @@
 import logging
 import numpy as np
 import xarray as xr
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import cartopy.crs as ccrs
