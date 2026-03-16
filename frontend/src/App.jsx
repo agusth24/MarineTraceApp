@@ -7,7 +7,7 @@ import SpatialMapPage  from './pages/SpatialMapPage'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('main')
-
+  
   const renderPage = () => {
     switch (currentPage) {
       case 'main':

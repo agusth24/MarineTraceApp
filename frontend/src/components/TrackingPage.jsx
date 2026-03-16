@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import axios from 'axios'
 import './TrackingPage.css'
 
+const API = import.meta.env.VITE_API_BASE_URL
+
 function TrackingPage({ onBack }) {
   const [formData, setFormData] = useState({
     location: '',
@@ -82,7 +84,7 @@ function TrackingPage({ onBack }) {
         particles: parseInt(formData.particles)
       }
 
-      const response = await axios.post('http://localhost:5000/api/simulate', payload)
+      const response = await axios.post(`${API}/api/simulate`, payload)
       const jobId = response.data.job_id
       
       setStatusMessage('Simulasi sedang berjalan di server...')
@@ -90,7 +92,7 @@ function TrackingPage({ onBack }) {
       // 2. Poll for Status
       const pollInterval = setInterval(async () => {
         try {
-          const statusRes = await axios.get(`http://localhost:5000/api/simulate/${jobId}`)
+          const statusRes = await axios.get(`${API}/api/simulate/${jobId}`)
           const job = statusRes.data
           
           if (job.status === 'completed') {
@@ -268,7 +270,7 @@ function TrackingPage({ onBack }) {
                   <div className="plots-grid">
                     <div className="image-container">
                       <img 
-                        src={`http://localhost:5000${results.files.animation}`} 
+                        src={`${API}${results.files.animation}`} 
                         alt="Drift Animation" 
                         style={{maxWidth: '100%', borderRadius: '8px', border: '1px solid #ddd'}}
                       />
@@ -299,7 +301,7 @@ function TrackingPage({ onBack }) {
                   <div className="plots-grid">
                     <div className="image-container">
                       <img 
-                        src={`http://localhost:5000${results.files.osm_plot}`} 
+                        src={`${API}${results.files.osm_plot}`} 
                         alt="OSM Plot" 
                         style={{maxWidth: '100%', borderRadius: '8px', border: '1px solid #ddd'}}
                       />

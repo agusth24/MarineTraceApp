@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 import json
 import numpy as np
 from PIL import Image
+from PIL.ExifTags import TAGS, GPSTAGS
 import cv2
 import sys
 import threading
@@ -278,18 +279,41 @@ def scatter_coordinate(lat, lon):
         return lat, lon
 
     # Box-Muller: hasilkan dua nilai normal independen
-    u1 = random.random() or 1e-10   # hindari log(0)
-    u2 = random.random()
-    mag = SCATTER_RADIUS_DEG * math.sqrt(-2.0 * math.log(u1))
-    dlat = mag * math.cos(2 * math.pi * u2)
-    dlon = mag * math.sin(2 * math.pi * u2)
+    # u1 = random.random() or 1e-10   # hindari log(0)
+    # u2 = random.random()
+    # mag = SCATTER_RADIUS_DEG * math.sqrt(-2.0 * math.log(u1))
+    # dlat = mag * math.cos(2 * math.pi * u2)
+    # dlon = mag * math.sin(2 * math.pi * u2)
 
-    # Koreksi longitude agar jarak fisiknya setara (1° lon < 1° lat di lintang tinggi)
-    lat_rad = math.radians(lat)
-    dlon = dlon / max(math.cos(lat_rad), 0.01)
+    # # Koreksi longitude agar jarak fisiknya setara (1° lon < 1° lat di lintang tinggi)
+    # lat_rad = math.radians(lat)
+    # dlon = dlon / max(math.cos(lat_rad), 0.01)
 
-    return round(lat + dlat, 7), round(lon + dlon, 7)
+    return round(lat, 7), round(lon, 7)
 
+
+def decimal_coords(coords, ref):
+    decimal_degrees = float(coords[0] + coords[1] / 60 + coords[2] / 3600)
+    
+    if ref == 'S' or ref == 'W':
+        decimal_degrees = -decimal_degrees
+        
+    return decimal_degrees
+
+def get_gps_info(image):
+    exif_data = image._getexif()
+    if not exif_data:
+        return None
+        
+    for tag, value in exif_data.items():
+        decoded = TAGS.get(tag, tag)
+        if decoded == "GPSInfo":
+            gps_data = {}
+            for t in value:
+                sub_tag = GPSTAGS.get(t, t)
+                gps_data[sub_tag] = value[t]
+            return gps_data
+    return None
 
 # ─── Detection ─────────────────────────────────────────────────────────────────
 @app.route('/api/detect', methods=['POST'])
@@ -304,12 +328,6 @@ def detect_waste():
         data       = request.json
         location   = data.get('location')
         image_b64  = data.get('image')
-        latitude   = data.get('latitude',  None)
-        longitude  = data.get('longitude', None)
-
-        # Scatter koordinat agar titik-titik tidak tumpuk di satu titik
-        # pada spatial map ketika banyak gambar diupload dari lokasi yang sama.
-        scattered_lat, scattered_lon = scatter_coordinate(latitude, longitude)
 
         if not location or not image_b64:
             return jsonify({'error': 'Missing location or image'}), 400
@@ -319,6 +337,18 @@ def detect_waste():
 
         image_bytes = base64.b64decode(image_b64)
         image       = Image.open(io.BytesIO(image_bytes))
+
+        gps_info = get_gps_info(image)
+        latitude = None
+        longitude = None
+
+        try:
+            latitude = decimal_coords(gps_info['GPSLatitude'], gps_info['GPSLatitudeRef'])
+            longitude = decimal_coords(gps_info['GPSLongitude'], gps_info['GPSLongitudeRef'])
+        except AttributeError:
+            print("No GPS data found in image EXIF metadata.")
+            latitude   = data.get('latitude',  None)
+            longitude  = data.get('longitude', None)
 
         timestamp        = datetime.now().strftime('%Y%m%d_%H%M%S')
         image_filename   = f"{location}_{timestamp}.jpg"
@@ -374,7 +404,7 @@ def detect_waste():
             (location, latitude, longitude, image_path, result_path,
              plastic_bag, bottle, wrapper, total_items, confidence)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (location, scattered_lat, scattered_lon, image_path, result_path,
+        ''', (location, latitude, longitude, image_path, result_path,
               plastic_bag, bottle, wrapper, total_items, avg_confidence))
 
         cursor.execute('''

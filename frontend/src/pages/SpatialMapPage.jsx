@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import './SpatialMapPage.css'
 
-const API = 'http://localhost:5000'
+const API = import.meta.env.VITE_API_BASE_URL
 
 // Warna per kondisi
 const CONDITION = {
@@ -39,7 +39,7 @@ export default function SpatialMapPage({ onBack }) {
       if (layersData.success)  setLayers(layersData.layers)
       if (summaryData.success) setSummary(summaryData)
     } catch (e) {
-      setError('Gagal memuat data. Pastikan backend berjalan di localhost:5000')
+      setError('Gagal memuat data: ' + (e.message || 'Kesalahan tidak diketahui'))
     } finally {
       setLoading(false)
     }

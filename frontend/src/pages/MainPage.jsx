@@ -40,8 +40,8 @@ function MainPage({ onNavigate }) {
             <button className="btn">Mulai Deteksi</button>
           </div>
 
-          {/* Card 3: Spatial Map — BARU */}
-          <div className="card card-featured" onClick={() => onNavigate('spatial-map')}>
+          {/* Card 3: Spatial Map */}
+          <div className="card" onClick={() => onNavigate('spatial-map')}>
             <div className="card-icon">🗺️</div>
             <h2>Spatial Mapping</h2>
             <p>
